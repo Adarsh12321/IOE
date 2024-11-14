@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bus Card System</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Bus Card System with QR Code</h1>
+
+        <!-- Traveler Input Section -->
+        <div class="input-section">
+            <label for="travelerId">Enter Traveler ID:</label>
+            <input type="number" id="travelerId" placeholder="Enter ID (6 digits)">
+            <button onclick="getTravelerDetails()">Search</button>
+        </div>
+
+        <!-- Traveler Details Section -->
+        <div class="details-section" id="detailsSection">
+            <h2>Traveler Details</h2>
+            <div class="traveler-info">
+                <p><strong>Name:</strong> <span id="travelerName"></span></p>
+                <p><strong>Age:</strong> <span id="travelerAge"></span></p>
+                <p><strong>Contact:</strong> <span id="travelerContact"></span></p>
+                <p><strong>Current Balance:</strong> ₹<span id="travelerBalance"></span></p>
+            </div>
+            <div class="transaction-section">
+                <h3>Last Transaction</h3>
+                <ul id="transactionHistory"></ul>
+            </div>
+        </div>
+
+        <!-- QR Code Section -->
+        <div class="qr-section" id="qrCode">
+            <h2>To pay for the fare scan here</h2>
+            <canvas id="qrcode"></canvas>
+        </div>
+    </div>
+
+    <!-- QR Code Library -->
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.4.4/build/qrcode.min.js"></script>
+
+    <script>
+        const travelers = [
+            { id: 123456, name: "Gargi", age: 18, contact: "9433989909", balance: 50, transactions: [{ date: "2024-10-01", amount: 5, description: "Bus Ride" }] },
+            { id: 234567, name: "Adarsh", age: 25, contact: "5465437482", balance: 75, transactions: [{ date: "2024-10-03", amount: 3, description: "Bus Ride" }] },
+            { id: 345678, name: "Aditya", age: 45, contact: "7645764563", balance: 100, transactions: [{ date: "2024-10-04", amount: 5, description: "Bus Ride" }] },
+            { id: 456789, name: "Abdullah", age: 35, contact: "6543548976", balance: 120, transactions: [{ date: "2024-10-02", amount: 6, description: "Bus Ride" }] },
+            { id: 567890, name: "Keerthi", age: 28, contact: "6446345867", balance: 80, transactions: [{ date: "2024-10-01", amount: 4, description: "Bus Ride" }] }
+        ];
+
+        function getTravelerDetails() {
+            const travelerId = parseInt(document.getElementById("travelerId").value);
+            const traveler = travelers.find(t => t.id === travelerId);
+            const detailsSection = document.getElementById("detailsSection");
+            const qrCodeSection = document.getElementById("qrCode");
+
+            if (traveler) {
+                document.getElementById("travelerName").textContent = traveler.name;
+                document.getElementById("travelerAge").textContent = traveler.age;
+                document.getElementById("travelerContact").textContent = traveler.contact;
+                document.getElementById("travelerBalance").textContent = traveler.balance;
+
+                const transactionHistory = document.getElementById("transactionHistory");
+                transactionHistory.innerHTML = ''; 
+                const lastTransaction = traveler.transactions[traveler.transactions.length - 1];
+                const li = document.createElement('li');
+                li.textContent = `${lastTransaction.date}: ₹${lastTransaction.amount} - ${lastTransaction.description}`;
+                transactionHistory.appendChild(li);
+
+                detailsSection.style.display = 'block';
+                qrCodeSection.style.display = 'block';
+
+                // Generate Google Pay UPI QR code
+                const upiUrl = `upi://pay?pa=rs615664@oksbi&pn=${encodeURIComponent("Transport Corporation")}&am=${traveler.balance}&cu=INR&tn=Bus%20Card%20Recharge`;
+                generateQRCode(upiUrl);
+            } else {
+                alert("Traveler ID not found. Please enter a valid 6-digit ID.");
+                qrCodeSection.style.display = 'none';
+                detailsSection.style.display = 'none';
+            }
+        }
+
+        function generateQRCode(data) {
+            const canvas = document.getElementById("qrcode");
+            canvas.innerHTML = ''; 
+            QRCode.toCanvas(canvas, data, function (error) {
+                if (error) {
+                    console.error("Error generating QR Code:", error);
+                } else {
+                    console.log("QR Code Generated!");
+                }
+            });
+        }
+    </script>
+</body>
+</html>
